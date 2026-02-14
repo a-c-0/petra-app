@@ -339,6 +339,20 @@
       backdrop-filter: blur(2px);
       pointer-events: none;
       transition: opacity .25s ease;
+    
+      text-align: center;
+      display: inline-block;
+      width: max-content;
+      max-width: calc(100vw - 32px);
+      line-height: 1.35;
+      white-space: normal;
+    }
+
+    @media (max-width: 420px){
+      .hint{
+        width: 18ch;
+        max-width: calc(100vw - 32px);
+      }
     }
 
     .hint.hidden{
