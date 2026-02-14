@@ -1,0 +1,23 @@
+{
+  "name": "Petra’s App",
+  "short_name": "Petra 💖",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#140018",
+  "theme_color": "#ff4da6",
+  "description": "Valentine’s Day",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

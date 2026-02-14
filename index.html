@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Petra's App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#ff4da6">
+  <link rel="icon" href="./icon.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- PIXEL FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <!-- LOTTIE PLAYER -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <style>
+    :root{
+      --bg1:#140018;
+      --pink:#ff4da6;
+      --pink2:#ff76c5;
+
+      --paper:#fff3fa;
+      --shadow: rgba(0,0,0,.55);
+
+      --note:#fff9fd;
+      --note2:#ffe1f1;
+      --ink:#3a0b2b;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body{
+      margin:0;
+      overflow:hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(1200px 800px at 50% 20%, #3a0042 0%, var(--bg1) 45%, #0b0010 100%);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -10vh;
+      width: var(--size, 18px);
+      height: var(--size, 18px);
+      opacity: var(--op, .25);
+      transform: rotate(45deg);
+      background: linear-gradient(180deg, var(--pink2), var(--pink));
+      border-radius: 4px;
+      animation: floatUp var(--dur, 10s) linear infinite;
+    }
+
+    .heart::before,
+    .heart::after{
+      content:"";
+      position:absolute;
+      width:100%;
+      height:100%;
+      background: inherit;
+      border-radius: 50%;
+    }
+    .heart::before{ left:-50%; }
+    .heart::after{ top:-50%; }
+
+    @keyframes floatUp{
+      from{ transform: translateY(0) rotate(45deg); }
+      to{ transform: translateY(-120vh) rotate(45deg); }
+    }
+
+    .stage{
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .note{
+      position:absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) translateY(160px) scale(.92);
+      width: min(520px, 92vw);
+      height: min(520px, 74vh);
+      border-radius: 22px;
+      background:
+        radial-gradient(260px 160px at 20% 18%, rgba(255,255,255,.88), rgba(255,255,255,0) 60%),
+        linear-gradient(180deg, var(--note), var(--note2));
+      box-shadow:
+        0 34px 70px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(0,0,0,.10);
+      padding: 36px 28px;
+      color: var(--ink);
+      text-align:center;
+      z-index: 30;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        transform .65s cubic-bezier(.2,.9,.2,1),
+        opacity .35s ease;
+    }
+
+    .stage.open .note{
+      transform: translate(-50%, -50%) translateY(0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .note::after{
+      content:"";
+      position:absolute;
+      inset: 16px;
+      border-radius: 16px;
+      background:
+        linear-gradient(transparent 0 22px, rgba(255,77,166,.09) 22px 23px) 0 0 / 100% 23px;
+      opacity:.55;
+      pointer-events:none;
+    }
+
+    .note-content{
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display:flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .note h1{
+      margin:0;
+      font-size: 30px;
+    }
+
+    @font-face{
+      font-family: "Hand";
+      src: local("Bradley Hand"), local("Segoe Script"), local("Snell Roundhand"), local("Comic Sans MS");
+      font-display: swap;
+    }
+
+    .letter{
+      width: 100%;
+      max-width: 44ch;
+      text-align: center;
+      white-space: pre-wrap;
+      font-size: 22px;
+      line-height: 1.9;
+      margin: 0 auto;
+      opacity: .96;
+      font-family: "Hand", "Segoe Script", "Bradley Hand", "Snell Roundhand", "Comic Sans MS", cursive;
+      letter-spacing: .3px;
+    }
+
+    .type-caret{
+      display:inline-block;
+      width: .55ch;
+      transform: translateY(1px);
+      animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink{
+      50%{ opacity: 0; }
+    }
+
+    .dog-wrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-top: 10px;
+      animation: floaty 3s ease-in-out infinite;
+    }
+
+    @keyframes floaty{
+      0%,100%{ transform: translateY(0); }
+      50%{ transform: translateY(-8px); }
+    }
+
+    .choices{
+      display:flex;
+      gap: 26px;
+      align-items:center;
+      justify-content:center;
+      margin-top: 6px;
+      position: relative;
+    }
+
+    .choice-btn{
+      appearance:none;
+      border: 0;
+      cursor: pointer;
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: .2px;
+      color: #fff;
+      background: linear-gradient(180deg, var(--pink2), var(--pink));
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      transition: transform .18s ease, filter .18s ease, opacity .18s ease;
+      user-select:none;
+      touch-action: manipulation;
+    }
+
+    .choice-btn:active{
+      transform: translateY(1px) scale(.99);
+      filter: brightness(.98);
+    }
+
+    .choice-btn.no{
+      color: var(--ink);
+      background: linear-gradient(180deg, #ffffff, #ffe1f1);
+      box-shadow: 0 10px 22px rgba(0,0,0,.14);
+      border: 1px solid rgba(58,11,43,.12);
+    }
+
+    @keyframes bumpYes{
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.12); }
+      60%  { transform: scale(1.04); }
+      100% { transform: scale(1.08); }
+    }
+
+    @keyframes yeetNo{
+      0%   { transform: translateX(0) translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateX(110px) translateY(-18px) rotate(12deg) scale(.85); opacity: 0; }
+    }
+
+    .choices.only-yes{
+      gap: 0;
+    }
+    .choices.only-yes .choice-btn.yes{
+      animation: bumpYes .35s ease both;
+      transform: scale(1.08);
+    }
+    .choices.only-yes .choice-btn.no{
+      pointer-events:none;
+      animation: yeetNo .35s ease both;
+    }
+
+    .note .sig{
+      font-style: italic;
+      opacity:.86;
+      font-size: 16px;
+      margin-top: 6px;
+      white-space: pre-line;
+    }
+
+    .envelope-btn{
+      appearance:none;
+      border:0;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      z-index: 10;
+    }
+
+    .pulse-wrap{
+      position: relative;
+      width: 280px;
+      height: 190px;
+      animation: pulse 1.2s ease-in-out infinite;
+      filter: drop-shadow(0 18px 35px var(--shadow));
+    }
+
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); }
+      50%{ transform:scale(1.06); }
+    }
+
+    .envelope{
+      position:absolute;
+      inset:0;
+      border-radius: 16px;
+      overflow:hidden;
+      background: linear-gradient(180deg, var(--paper), #ffd2ea);
+    }
+
+    .env-pocket{
+      position:absolute;
+      bottom:0;
+      height:64%;
+      width:100%;
+      background: linear-gradient(180deg, #ffe1f1, #ffc6e1);
+      z-index:3;
+    }
+
+    .env-flap{
+      position:absolute;
+      top:0;
+      width:100%;
+      height:72%;
+      background: linear-gradient(180deg, #ffe1f1, #ffa3ce);
+      clip-path: polygon(0 0,100% 0,50% 76%);
+      transform-origin: top;
+      transition: transform .4s cubic-bezier(.2,.9,.2,1);
+      z-index:4;
+    }
+
+    .stage.open .env-flap{
+      transform: rotateX(165deg);
+    }
+
+    .hint{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%, 125px);
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+      user-select:none;
+      z-index: 40;
+      font-family: "Press Start 2P", monospace;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.10);
+      backdrop-filter: blur(2px);
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    .hint.hidden{
+      opacity: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hearts" id="hearts"></div>
+
+  <main class="stage" id="stage">
+    <div class="note" id="note">
+      <div class="note-content" id="noteContent">
+        <h1>Petra, will you be my Valentine?</h1>
+
+        <div class="dog-wrap">
+          <lottie-player
+            src="./dog.json"
+            background="transparent"
+            speed="1"
+            loop
+            autoplay
+            style="width:260px;height:260px;">
+          </lottie-player>
+        </div>
+
+        <div class="choices" id="choices">
+          <button class="choice-btn yes" id="yesBtn" type="button">Yes</button>
+          <button class="choice-btn no" id="noBtn" type="button">No</button>
+        </div>
+
+        <div class="sig" id="sig"></div>
+      </div>
+    </div>
+
+    <button class="envelope-btn" id="envBtn" type="button">
+      <div class="pulse-wrap">
+        <div class="envelope">
+          <div class="env-pocket"></div>
+          <div class="env-flap"></div>
+        </div>
+      </div>
+    </button>
+
+    <div class="hint" id="hint">TAP THE ENVELOPE!</div>
+  </main>
+
+  <script>
+    const hearts = document.getElementById('hearts');
+    const stage = document.getElementById('stage');
+    const envBtn = document.getElementById('envBtn');
+    const note = document.getElementById('note');
+    const hint = document.getElementById('hint');
+
+    const noteContent = document.getElementById('noteContent');
+    const initialNoteHTML = noteContent.innerHTML;
+
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.setProperty('--size', 10 + Math.random()*28 + 'px');
+      h.style.setProperty('--dur', 7 + Math.random()*9 + 's');
+      h.style.setProperty('--op', .15 + Math.random()*.35);
+      hearts.appendChild(h);
+      setTimeout(()=>h.remove(),16000);
+    }
+
+    setInterval(spawnHeart, 420);
+
+    const letterText =
+`Thank you so much for constantly bringing out the best in me. I'm so lucky to have found you. I can't imagine my life without you. I love you so much.
+
+All my love,
+
+Alex`;
+
+    let typing = false;
+
+    function typeLetter(targetEl, text, msPerChar = 45){
+      typing = true;
+      let i = 0;
+
+      const caret = document.createElement('span');
+      caret.className = 'type-caret';
+      caret.textContent = '|';
+
+      targetEl.textContent = '';
+      targetEl.appendChild(caret);
+
+      const tick = () => {
+        const ch = text.charAt(i);
+        if (ch){
+          caret.insertAdjacentText('beforebegin', ch);
+          i++;
+          setTimeout(tick, msPerChar);
+        } else {
+          caret.remove();
+          typing = false;
+        }
+      };
+
+      tick();
+    }
+
+    function lockToYes(){
+      const choices = document.getElementById('choices');
+      const noBtn = document.getElementById('noBtn');
+
+      if (!choices || choices.classList.contains('only-yes')) return;
+      choices.classList.add('only-yes');
+
+      setTimeout(() => {
+        const stillThere = document.getElementById('noBtn');
+        if (stillThere && stillThere.parentNode) stillThere.remove();
+      }, 380);
+    }
+
+    function resetAll(){
+      stage.classList.remove('open');
+      noteContent.innerHTML = initialNoteHTML;
+      typing = false;
+      hint.classList.remove('hidden');
+
+      const lottie = document.querySelector('lottie-player');
+      if (lottie){
+        lottie.stop();
+        lottie.play();
+      }
+    }
+
+    envBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      stage.classList.toggle('open');
+
+      if (stage.classList.contains('open')){
+        hint.classList.add('hidden');
+      }
+
+      const lottie = document.querySelector('lottie-player');
+      if(stage.classList.contains('open') && lottie){
+        lottie.stop();
+        lottie.play();
+      }
+    });
+
+    stage.addEventListener('click', (e) => {
+      if (!stage.classList.contains('open')) return;
+
+      const clickedInsideNote = note && note.contains(e.target);
+      const clickedEnvelope = envBtn && envBtn.contains(e.target);
+
+      if (!clickedInsideNote && !clickedEnvelope){
+        resetAll();
+        return;
+      }
+
+      const t = e.target;
+
+      if (t && t.id === 'noBtn'){
+        lockToYes();
+        const sig = document.getElementById('sig');
+        if (sig) sig.textContent = "Oi! 😠";
+      }
+
+      if (t && t.id === 'yesBtn'){
+        if (typing) return;
+
+        noteContent.innerHTML = `<div class="letter" id="letter"></div>`;
+        const letterEl = document.getElementById('letter');
+        typeLetter(letterEl, letterText, 45);
+      }
+    });
+  </script>
+
+  <!-- Service worker (PWA) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
+</body>
+</html>
